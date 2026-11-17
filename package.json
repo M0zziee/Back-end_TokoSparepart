@@ -9,6 +9,7 @@
     "check": "tsc",
     "dev": "nodemon --exec \"node --env-file-if-exists=.env\" src/server.ts",
     "migrate": "node --env-file-if-exists=.env migrations/run.ts",
+    "create-user": "node --env-file-if-exists=.env scripts/create-user.ts",
     "test": "node --test"
   },
   "dependencies": {

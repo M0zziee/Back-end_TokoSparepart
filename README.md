@@ -46,6 +46,7 @@ Server berjalan di `http://localhost:${PORT}` (default `3001`).
 | --------------- | ----------------------------------------------- |
 | `npm run dev`   | nodemon + `node src/server.ts`                  |
 | `npm run migrate` | jalankan migrasi yang belum dicatat           |
+| `npm run create-user` | buat/ubah user dari CLI (ADMIN/KASIR)      |
 | `npm run check` | type-check (`tsc`, noEmit)                      |
 | `npm test`      | unit test (`node --test`)                       |
 
@@ -55,7 +56,14 @@ Server berjalan di `http://localhost:${PORT}` (default `3001`).
 
 | Method | Path                    | Keterangan                        |
 | ------ | ----------------------- | --------------------------------- |
-| GET    | `/health`               | Health check                      |
+| GET    | `/health`               | Health check (publik)             |
+| POST   | `/auth/login`           | Login, set cookie sesi            |
+| POST   | `/auth/logout`          | Logout, hapus sesi                |
+| GET    | `/auth/me`              | User yang sedang login            |
+| GET    | `/users`                | Daftar user (ADMIN)               |
+| POST   | `/users`                | Tambah user (ADMIN)               |
+| PATCH  | `/users/:id`            | Ubah user (ADMIN)                 |
+| PATCH  | `/users/:id/password`   | Reset password (ADMIN)            |
 | GET    | `/categories`           | Daftar kategori                   |
 | POST   | `/categories`           | Tambah kategori                   |
 | PATCH  | `/categories/:id`       | Ubah nama kategori                |
@@ -73,6 +81,24 @@ Server berjalan di `http://localhost:${PORT}` (default `3001`).
 | GET    | `/reports/sales`        | Laporan penjualan (belum dibuat)  |
 
 Endpoint **tanpa prefix `/api`** (mis. `/products`, bukan `/api/products`). Dokumentasi interaktif: `GET /docs`, spec mentah: `GET /openapi.json`. Spec di `src/openapi.ts` wajib diperbarui setiap endpoint baru ditambahkan.
+
+## Auth & Role
+
+Dua role: `ADMIN` dan `KASIR`. Satu database, satu aplikasi.
+
+- Sesi disimpan di tabel `sessions` (hash SHA-256 dari token), cookie `session` berlaku 12 jam.
+- Cookie `httpOnly`, `sameSite=lax`, `secure` saat `NODE_ENV=production`.
+- Baca produk/kategori: semua role login. Tulis produk/kategori: `ADMIN` saja.
+- Kelola user: `ADMIN` saja. Tidak ada endpoint register publik.
+- Frontend mengakses API lewat proxy `/api/*` agar cookie tetap first-party.
+
+Buat admin pertama (idempotent, username ada → update password):
+
+```bash
+USER_PASSWORD="password-kuat" npm run create-user -- admin "Admin Toko" ADMIN
+```
+
+Tambahkan kasir lewat `POST /users` setelah login sebagai admin.
 
 ## Konvensi
 
@@ -98,11 +124,12 @@ Endpoint **tanpa prefix `/api`** (mis. `/products`, bukan `/api/products`). Doku
 | `categories`      | Kategori produk                                           |
 | `products`        | Data produk (SKU, nama, harga, kategori)                  |
 | `stock_movements` | Riwayat stok: `in` / `out` / `adjustment`, disertai ref   |
+| `users`           | Akun admin/kasir (`role`, `active`, `password_hash`)      |
+| `sessions`        | Sesi login (`token_hash`, `expires_at`)                   |
 | `sales`*          | Header transaksi POS                                      |
 | `sale_items`*     | Item transaksi + harga saat transaksi                     |
-| `users`*          | Kasir/admin                                               |
 
-\* Belum ada di migrasi. `sales`/`sale_items` dibuat pada Fase 3, `users` pada Fase 5.
+\* Belum ada di migrasi. `sales`/`sale_items` dibuat pada Fase 4.
 
 Stok **dihitung dari `stock_movements`**, bukan kolom stok yang ditimpa. Kolom `qty` disimpan bertanda: `in` positif, `out` negatif, `adjustment` boleh keduanya. Stok saat ini = `SUM(qty)` per produk.
 

@@ -61,6 +61,19 @@ const productRequestBody = {
   },
 };
 
+const userSchema = {
+  type: "object",
+  properties: {
+    id: { type: "string", example: "1" },
+    username: { type: "string", example: "kasir1" },
+    name: { type: "string", example: "Kasir Satu" },
+    role: { type: "string", enum: ["ADMIN", "KASIR"] },
+    active: { type: "boolean" },
+    createdAt: { type: "string", format: "date-time" },
+  },
+  required: ["id", "username", "name", "role"],
+};
+
 export const openapi = {
   openapi: "3.1.0",
   info: {
@@ -70,11 +83,18 @@ export const openapi = {
       "API POS & manajemen stok. Spec ini tumbuh seiring modul baru ditambahkan.",
   },
   servers: [{ url: "/" }],
+  security: [{ cookieAuth: [] }],
+  components: {
+    securitySchemes: {
+      cookieAuth: { type: "apiKey", in: "cookie", name: "session" },
+    },
+  },
   paths: {
     "/health": {
       get: {
         summary: "Health check",
         tags: ["system"],
+        security: [],
         responses: {
           "200": {
             description: "Server sehat",
@@ -88,6 +108,198 @@ export const openapi = {
               },
             },
           },
+        },
+      },
+    },
+    "/auth/login": {
+      post: {
+        summary: "Login",
+        description:
+          "Set cookie sesi `httpOnly` 12 jam. Pakai `credentials: include` di client.",
+        tags: ["auth"],
+        security: [],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  username: { type: "string" },
+                  password: { type: "string", format: "password" },
+                },
+                required: ["username", "password"],
+              },
+            },
+          },
+        },
+        responses: {
+          "200": {
+            description: "Login berhasil",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    id: { type: "string" },
+                    username: { type: "string" },
+                    name: { type: "string" },
+                    role: { type: "string", enum: ["ADMIN", "KASIR"] },
+                  },
+                },
+              },
+            },
+          },
+          "400": errorResponse("Username atau password kosong"),
+          "401": errorResponse("Username atau password salah"),
+        },
+      },
+    },
+    "/auth/logout": {
+      post: {
+        summary: "Logout",
+        description: "Hapus sesi di database dan cookie `session`.",
+        tags: ["auth"],
+        security: [],
+        responses: {
+          "204": { description: "Sesi dihapus" },
+        },
+      },
+    },
+    "/auth/me": {
+      get: {
+        summary: "User yang sedang login",
+        tags: ["auth"],
+        responses: {
+          "200": {
+            description: "Data sesi",
+            content: { "application/json": { schema: userSchema } },
+          },
+          "401": errorResponse("Belum login atau sesi kedaluwarsa"),
+        },
+      },
+    },
+    "/users": {
+      get: {
+        summary: "Daftar user",
+        tags: ["users"],
+        responses: {
+          "200": {
+            description: "Daftar user",
+            content: {
+              "application/json": {
+                schema: { type: "array", items: userSchema },
+              },
+            },
+          },
+          "401": errorResponse("Belum login"),
+          "403": errorResponse("Bukan ADMIN"),
+        },
+      },
+      post: {
+        summary: "Tambah user",
+        tags: ["users"],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  username: { type: "string" },
+                  name: { type: "string" },
+                  role: { type: "string", enum: ["ADMIN", "KASIR"] },
+                  password: { type: "string", format: "password" },
+                },
+                required: ["username", "name", "role", "password"],
+              },
+            },
+          },
+        },
+        responses: {
+          "201": {
+            description: "User dibuat",
+            content: { "application/json": { schema: userSchema } },
+          },
+          "400": errorResponse("Input tidak valid"),
+          "401": errorResponse("Belum login"),
+          "403": errorResponse("Bukan ADMIN"),
+          "409": errorResponse("Username sudah dipakai"),
+        },
+      },
+    },
+    "/users/{id}": {
+      patch: {
+        summary: "Ubah user",
+        description: "Kirim hanya field yang berubah: `name`, `role`, `active`.",
+        tags: ["users"],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  role: { type: "string", enum: ["ADMIN", "KASIR"] },
+                  active: { type: "boolean" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          "200": {
+            description: "User diperbarui",
+            content: { "application/json": { schema: userSchema } },
+          },
+          "400": errorResponse("Input tidak valid"),
+          "401": errorResponse("Belum login"),
+          "403": errorResponse("Bukan ADMIN"),
+          "404": errorResponse("User tidak ditemukan"),
+        },
+      },
+    },
+    "/users/{id}/password": {
+      patch: {
+        summary: "Reset password user",
+        tags: ["users"],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  password: { type: "string", format: "password", minLength: 8 },
+                },
+                required: ["password"],
+              },
+            },
+          },
+        },
+        responses: {
+          "204": { description: "Password diganti" },
+          "400": errorResponse("Password kurang dari 8 karakter"),
+          "401": errorResponse("Belum login"),
+          "403": errorResponse("Bukan ADMIN"),
+          "404": errorResponse("User tidak ditemukan"),
         },
       },
     },
