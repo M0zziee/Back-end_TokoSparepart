@@ -77,6 +77,7 @@ Endpoint **tanpa prefix `/api`** (mis. `/products`, bukan `/api/products`). Doku
 ## Konvensi
 
 - ESM aktif (`"type": "module"`).
+- Akses database: `pg` + SQL manual di `service.ts` (parameterized, alias camelCase); tanpa ORM.
 - CORS memakai satu origin dari `FRONTEND_ORIGIN` (default `http://localhost:3000`).
 - Import **wajib** menyertakan ekstensi `.ts`:
   ```ts
