@@ -3,12 +3,12 @@ import type { Pool } from "pg";
 export type Category = {
   id: string;
   name: string;
-  created_at: string;
+  createdAt: string;
 };
 
 export async function listCategories(pool: Pool): Promise<Category[]> {
   const { rows } = await pool.query<Category>(
-    "SELECT id, name, created_at FROM categories ORDER BY name ASC",
+    'SELECT id, name, created_at AS "createdAt" FROM categories ORDER BY name ASC',
   );
   return rows;
 }
@@ -18,7 +18,7 @@ export async function createCategory(
   name: string,
 ): Promise<Category> {
   const { rows } = await pool.query<Category>(
-    "INSERT INTO categories (name) VALUES ($1) RETURNING id, name, created_at",
+    'INSERT INTO categories (name) VALUES ($1) RETURNING id, name, created_at AS "createdAt"',
     [name],
   );
   return rows[0];
@@ -30,7 +30,7 @@ export async function updateCategory(
   name: string,
 ): Promise<Category | null> {
   const { rows } = await pool.query<Category>(
-    "UPDATE categories SET name = $2 WHERE id = $1 RETURNING id, name, created_at",
+    'UPDATE categories SET name = $2 WHERE id = $1 RETURNING id, name, created_at AS "createdAt"',
     [id, name],
   );
   return rows[0] ?? null;
@@ -45,14 +45,4 @@ export async function deleteCategory(
     [id],
   );
   return (rowCount ?? 0) > 0;
-}
-
-// pg melempar kode 23505 untuk pelanggaran UNIQUE.
-export function isUniqueViolation(err: unknown): boolean {
-  return (
-    typeof err === "object" &&
-    err !== null &&
-    "code" in err &&
-    (err as { code?: unknown }).code === "23505"
-  );
 }

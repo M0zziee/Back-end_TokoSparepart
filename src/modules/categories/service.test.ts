@@ -5,7 +5,6 @@ import type { Pool } from "pg";
 import {
   createCategory,
   deleteCategory,
-  isUniqueViolation,
   listCategories,
   updateCategory,
 } from "./service.ts";
@@ -25,7 +24,7 @@ function fakePool(result: QueryResult) {
 
 test("listCategories mengembalikan baris dari query", async () => {
   const { pool } = fakePool({
-    rows: [{ id: "1", name: "Oli", created_at: "2026-01-01" }],
+    rows: [{ id: "1", name: "Oli", createdAt: "2026-01-01" }],
   });
 
   const rows = await listCategories(pool);
@@ -36,7 +35,7 @@ test("listCategories mengembalikan baris dari query", async () => {
 
 test("createCategory mengirim nama sebagai parameter", async () => {
   const { pool, calls } = fakePool({
-    rows: [{ id: "2", name: "Ban", created_at: "2026-01-01" }],
+    rows: [{ id: "2", name: "Ban", createdAt: "2026-01-01" }],
   });
 
   const category = await createCategory(pool, "Ban");
@@ -55,10 +54,4 @@ test("deleteCategory memakai rowCount", async () => {
   const { pool } = fakePool({ rows: [], rowCount: 0 });
 
   assert.equal(await deleteCategory(pool, "99"), false);
-});
-
-test("isUniqueViolation hanya true untuk kode 23505", () => {
-  assert.equal(isUniqueViolation({ code: "23505" }), true);
-  assert.equal(isUniqueViolation({ code: "23503" }), false);
-  assert.equal(isUniqueViolation(new Error("x")), false);
 });

@@ -2,10 +2,10 @@ import { Router, type Request, type Response } from "express";
 import type { Pool } from "pg";
 
 import { getPool } from "../../db.ts";
+import { isUniqueViolation } from "../../lib/pg-errors.ts";
 import {
   createCategory,
   deleteCategory,
-  isUniqueViolation,
   listCategories,
   updateCategory,
 } from "./service.ts";

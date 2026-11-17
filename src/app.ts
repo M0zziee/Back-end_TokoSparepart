@@ -4,6 +4,7 @@ import swaggerUi from "swagger-ui-express";
 
 import { errorHandler, notFound } from "./middleware/error.ts";
 import { createCategoriesRouter } from "./modules/categories/router.ts";
+import { createProductsRouter } from "./modules/products/router.ts";
 import { openapi } from "./openapi.ts";
 
 const app: Express = express();
@@ -25,6 +26,7 @@ app.get("/health", (_req: Request, res: Response) => {
 });
 
 app.use("/categories", createCategoriesRouter());
+app.use("/products", createProductsRouter());
 
 app.get("/openapi.json", (_req: Request, res: Response) => {
   res.json(openapi);

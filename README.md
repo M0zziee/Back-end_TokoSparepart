@@ -60,10 +60,11 @@ Server berjalan di `http://localhost:${PORT}` (default `3001`).
 | POST   | `/categories`           | Tambah kategori                   |
 | PATCH  | `/categories/:id`       | Ubah nama kategori                |
 | DELETE | `/categories/:id`       | Hapus kategori                    |
-| GET    | `/products`             | Daftar produk (belum dibuat)      |
-| POST   | `/products`             | Tambah produk (belum dibuat)      |
-| PATCH  | `/products/:id`         | Ubah produk (belum dibuat)        |
-| DELETE | `/products/:id`         | Hapus/nonaktifkan (belum dibuat)  |
+| GET    | `/products`             | Daftar produk aktif               |
+| GET    | `/products/:id`         | Detail produk                     |
+| POST   | `/products`             | Tambah produk                     |
+| PATCH  | `/products/:id`         | Ubah produk                       |
+| DELETE | `/products/:id`         | Nonaktifkan produk                |
 | GET    | `/products/:id/stock`   | Stok saat ini (belum dibuat)      |
 | POST   | `/stock/movements`      | Catat stok masuk/keluar (belum)   |
 | GET    | `/stock/movements`      | Riwayat pergerakan stok (belum)   |
