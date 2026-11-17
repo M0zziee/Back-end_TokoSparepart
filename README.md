@@ -56,6 +56,10 @@ Server berjalan di `http://localhost:${PORT}` (default `3001`).
 | Method | Path                    | Keterangan                        |
 | ------ | ----------------------- | --------------------------------- |
 | GET    | `/health`               | Health check                      |
+| GET    | `/categories`           | Daftar kategori                   |
+| POST   | `/categories`           | Tambah kategori                   |
+| PATCH  | `/categories/:id`       | Ubah nama kategori                |
+| DELETE | `/categories/:id`       | Hapus kategori                    |
 | GET    | `/products`             | Daftar produk (belum dibuat)      |
 | POST   | `/products`             | Tambah produk (belum dibuat)      |
 | PATCH  | `/products/:id`         | Ubah produk (belum dibuat)        |

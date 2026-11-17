@@ -1,9 +1,10 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { pool } from "../src/db.ts";
+import { getPool } from "../src/db.ts";
 
 const dir = fileURLToPath(new URL(".", import.meta.url));
+const pool = getPool();
 const client = await pool.connect();
 
 try {
