@@ -1,3 +1,4 @@
+import cors from "cors";
 import express, { type Express, type Request, type Response } from "express";
 import swaggerUi from "swagger-ui-express";
 
@@ -6,6 +7,12 @@ import { openapi } from "./openapi.ts";
 
 const app: Express = express();
 
+app.use(
+  cors({
+    origin: process.env.FRONTEND_ORIGIN ?? "http://localhost:3000",
+    credentials: true,
+  }),
+);
 app.use(express.json());
 
 app.get("/", (req: Request, res: Response) => {

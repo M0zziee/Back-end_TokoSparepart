@@ -10,6 +10,12 @@ export function errorHandler(
   res: Response,
   _next: NextFunction,
 ) {
-  const message = err instanceof Error ? err.message : "Terjadi kesalahan";
+  console.error(err);
+  const message =
+    process.env.NODE_ENV === "production"
+      ? "Terjadi kesalahan pada server"
+      : err instanceof Error
+        ? err.message
+        : "Terjadi kesalahan";
   res.status(500).json({ error: message });
 }

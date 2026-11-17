@@ -40,3 +40,16 @@ test("errorHandler memakai pesan default untuk error non-Error", () => {
   assert.equal(res.statusCode, 500);
   assert.deepEqual(res.body, { error: "Terjadi kesalahan" });
 });
+
+test("errorHandler menyembunyikan detail error di production", () => {
+  const previous = process.env.NODE_ENV;
+  process.env.NODE_ENV = "production";
+  try {
+    const res = mockResponse();
+    errorHandler(new Error("detail internal"), {} as Request, res, () => {});
+    assert.equal(res.statusCode, 500);
+    assert.deepEqual(res.body, { error: "Terjadi kesalahan pada server" });
+  } finally {
+    process.env.NODE_ENV = previous;
+  }
+});

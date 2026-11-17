@@ -46,6 +46,13 @@ test("GET /docs menyajikan swagger ui", async () => {
   assert.match(await res.text(), /swagger/i);
 });
 
+test("CORS mengizinkan origin frontend", async () => {
+  const res = await fetch(`${baseUrl}/health`, {
+    headers: { Origin: "http://localhost:3000" },
+  });
+  assert.equal(res.headers.get("access-control-allow-origin"), "http://localhost:3000");
+});
+
 test("route tak dikenal mengembalikan 404 format error", async () => {
   const res = await fetch(`${baseUrl}/tidak-ada`);
   assert.equal(res.status, 404);
